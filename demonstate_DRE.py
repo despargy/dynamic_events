@@ -3,6 +3,10 @@ import numpy as np
 from scipy.stats import multivariate_normal
 from mpl_toolkits.mplot3d import Axes3D
 
+SIZE_X = 10
+SIZE_Y = 10
+NPOINTS = 200
+
 # Class representing Gaussian Kernels
 class Kernel_Instance:
 
@@ -24,8 +28,8 @@ class ProbEvent:
         # duration
         self.duration = duration
         # Create mesh
-        x = np.linspace(-10, 10, 200) # Maybe define as the size of the input frame
-        y = np.linspace(-10, 10, 200) # Maybe define as the size of the input frame
+        x = np.linspace(-SIZE_X, SIZE_X, NPOINTS) # Maybe define as the size of the input frame
+        y = np.linspace(-SIZE_Y, SIZE_Y, NPOINTS) # Maybe define as the size of the input frame
         self.X, self.Y = np.meshgrid(x, y)
         # Produce the 'terrain'
         self.terrain = np.dstack((self.X, self.Y))
@@ -40,9 +44,8 @@ class ProbEvent:
         self.magnitute = np.zeros(self.X.shape)
 
 # Random number to display the center of KG
-def C_displ(unit=1, center=(0,0), cov=np.eye(2)):
+def C_recenter(unit=1, center=(0,0), cov=np.eye(2)):
     return unit*np.random.multivariate_normal(mean=center,cov=cov)
-    # return unit*(np.random.uniform(-1,1), np.random.uniform(-1,1))
 
 if __name__ == "__main__":
 
@@ -67,19 +70,15 @@ if __name__ == "__main__":
     core_K2 = Kernel_Instance(C2, STD2)
     core_K3 = Kernel_Instance(C3, STD3)
 
-    # Param for KGs' center offset : 1 means +-1
-    unit = 1
-
-
     # The event
-    Event = ProbEvent(duration=2)
+    Event = ProbEvent(duration=3)
 
     # Over the time t
     for t in range(Event.duration):
 
-        K1 = Kernel_Instance(C1+C_displ(unit=0.05, center=core_K1.cent, cov=core_K1.cov ), STD1)
-        K2 = Kernel_Instance(C2+C_displ(unit=0.2, center=core_K2.cent, cov=core_K2.cov ), STD2)
-        K3 = Kernel_Instance(C3+C_displ(unit=0.08, center=core_K3.cent, cov=core_K3.cov ), STD3)
+        K1 = Kernel_Instance(C_recenter(unit=0.7, center=core_K1.cent, cov=core_K1.cov ), STD1) 
+        K2 = Kernel_Instance(C_recenter(unit=0.7, center=core_K2.cent, cov=core_K2.cov ), STD2)  
+        K3 = Kernel_Instance(C_recenter(unit=0.7, center=core_K3.cent, cov=core_K3.cov ), STD3)  
 
         kernels_list = [K1, K2, K3] #
         Event.clear_magnitude()
@@ -96,7 +95,7 @@ if __name__ == "__main__":
         ax.set_zlabel('Probability Density')
         plt.tight_layout()
         plt.show(block=False)
-        plt.pause(2) 
+        plt.pause(1) 
         plt.close() # UnComment this to keep one plot only
 
     plt.waitforbuttonpress()
